@@ -13,18 +13,25 @@ func main() {
 	utils.ConnectDatabase()
 
 	// user context
-	router.POST("/user", controllers.CreateUser)
+	router.POST("/users", controllers.CreateUser)
 	router.GET("/users", controllers.FindUsers)
-	router.GET("/user/:id", controllers.FindUser)
-	router.PUT("/user/:id", controllers.UpdateUser)
-	router.DELETE("/user/:id", controllers.DeleteUser)
+	router.GET("/users/:id", controllers.FindUser)
+	router.PUT("/users/:id", controllers.UpdateUser)
+	router.DELETE("/users/:id", controllers.DeleteUser)
 
 	// warehouse context
-	router.POST("/warehouse", controllers.CreateWarehouse)
+	router.POST("/warehouses", controllers.CreateWarehouse)
 	router.GET("/warehouses", controllers.FindWarehouses)
-	router.GET("/warehouse/:id", controllers.FindWarehouse)
-	router.PUT("/warehouse/:id", controllers.UpdateWarehouse)
-	router.DELETE("/warehouse/:id", controllers.DeleteWarehouse)
+	router.GET("/warehouses/:id", controllers.FindWarehouse)
+	router.PUT("/warehouses/:id", controllers.UpdateWarehouse)
+	router.DELETE("/warehouses/:id", controllers.DeleteWarehouse)
+
+	// category context
+	router.POST("/categories", controllers.CreateCategory)
+	router.GET("/categories", controllers.FindCategories)
+	router.GET("/categories/:id", controllers.FindCategory)
+	router.PUT("/categories/:id", controllers.UpdateCategory)
+	router.DELETE("/categories/:id", controllers.DeleteCategory)
 
 	// user address context
 	router.PUT("/user/:id/address", controllers.UpdateUserAddress)
