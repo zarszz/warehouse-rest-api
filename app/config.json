@@ -4,13 +4,14 @@
         "address": ":9090"
     },
     "context": {
-        "timeout": 2
+        "timeout": 10
     },
+    "sslMode": "disable",
     "database": {
         "host": "localhost",
-        "port": "3306",
-        "user": "root",
-        "pass": "",
-        "name": "article"
+        "port": "5432",
+        "user": "ucok",
+        "pass": "password",
+        "name": "warehouse"
     }
 }

@@ -35,7 +35,7 @@ func (a *categoryUsecase) Fetch(c context.Context, cursor string, num int64) (re
 	return
 }
 
-func (a *categoryUsecase) GetByID(c context.Context, id int64) (res domain.Category, err error) {
+func (a *categoryUsecase) GetByID(c context.Context, id string) (res domain.Category, err error) {
 	ctx, cancel := context.WithTimeout(c, a.contextTimeout)
 	defer cancel()
 
@@ -61,7 +61,7 @@ func (a *categoryUsecase) Store(c context.Context, category *domain.Category) (e
 	return
 }
 
-func (a *categoryUsecase) Delete(c context.Context, id int64) (err error) {
+func (a *categoryUsecase) Delete(c context.Context, id string) (err error) {
 	ctx, cancel := context.WithTimeout(c, a.contextTimeout)
 	defer cancel()
 	existedCategory, err := a.categoryRepo.GetByID(ctx, id)

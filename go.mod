@@ -10,6 +10,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/gommon v0.3.0
+	github.com/lib/pq v1.3.0
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/motemen/go-quickfix v0.0.0-20200118031250-2a6e54e79a50 // indirect
 	github.com/motemen/gore v0.5.0 // indirect

@@ -56,7 +56,7 @@ func (m *mysqlCategoryRepository) fetch(ctx context.Context, query string, args 
 
 func (m *mysqlCategoryRepository) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Category, nextCursor string, err error) {
 	query := `SELECT id,category,created_at, updated_at
-  						FROM category WHERE created_at > ? ORDER BY created_at LIMIT ? `
+  						FROM categories WHERE created_at > $1 ORDER BY created_at LIMIT $2 `
 
 	decodedCursor, err := repository.DecodeCursor(cursor)
 	if err != nil && cursor != "" {
@@ -74,8 +74,8 @@ func (m *mysqlCategoryRepository) Fetch(ctx context.Context, cursor string, num 
 
 	return
 }
-func (m *mysqlCategoryRepository) GetByID(ctx context.Context, id int64) (res domain.Category, err error) {
-	query := `SELECT id, category, updated_at, created_at FROM category WHERE ID = ?`
+func (m *mysqlCategoryRepository) GetByID(ctx context.Context, id string) (res domain.Category, err error) {
+	query := `SELECT id, category, updated_at, created_at FROM categories WHERE ID = $1`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {
@@ -92,21 +92,21 @@ func (m *mysqlCategoryRepository) GetByID(ctx context.Context, id int64) (res do
 }
 
 func (m *mysqlCategoryRepository) Store(ctx context.Context, category *domain.Category) (err error) {
-	query := `INSERT INTO category SET category=? , id=?, updated_at=? , created_at=?`
+	query := `INSERT INTO categories(id, category, updated_at, created_at) VALUES($1, $2, $3, $4)`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	_, err = stmt.ExecContext(ctx, category.Category, category.ID, category.UpdatedAt, category.CreatedAt)
+	_, err = stmt.ExecContext(ctx, category.ID, category.Category, category.UpdatedAt, category.CreatedAt)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func (m *mysqlCategoryRepository) Delete(ctx context.Context, id int64) (err error) {
-	query := "DELETE FROM category WHERE id = ?"
+func (m *mysqlCategoryRepository) Delete(ctx context.Context, id string) (err error) {
+	query := "DELETE FROM categories WHERE id = $1"
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -130,15 +130,15 @@ func (m *mysqlCategoryRepository) Delete(ctx context.Context, id int64) (err err
 
 	return
 }
-func (m *mysqlCategoryRepository) Update(ctx context.Context, ar *domain.Category) (err error) {
-	query := `UPDATE category set category=?, updated_at=? WHERE ID = ?`
+func (m *mysqlCategoryRepository) Update(ctx context.Context, category *domain.Category) (err error) {
+	query := `UPDATE categories set category=$1, updated_at=$2 WHERE ID = $3`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, ar.Category, ar.UpdatedAt, ar.ID)
+	res, err := stmt.ExecContext(ctx, category.Category, category.UpdatedAt, category.ID)
 	if err != nil {
 		return
 	}

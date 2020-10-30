@@ -7,13 +7,17 @@ import (
 	"net/url"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
+	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 	_categoryHttpDelivery "github.com/zarszz/warehouse-rest-api/category/delivery/http"
-	_categoryHttpDeliveryMiddleware "github.com/zarszz/warehouse-rest-api/category/delivery/http/middleware"
 	_categoryRepo "github.com/zarszz/warehouse-rest-api/category/repository/mysql"
 	_categoryUcase "github.com/zarszz/warehouse-rest-api/category/usecase"
+	_middleware "github.com/zarszz/warehouse-rest-api/middleware"
+
+	_userHttpDelivery "github.com/zarszz/warehouse-rest-api/user/delivery"
+	_userRepo "github.com/zarszz/warehouse-rest-api/user/repository/mysql"
+	_userUcase "github.com/zarszz/warehouse-rest-api/user/usecase"
 )
 
 func init() {
@@ -30,16 +34,14 @@ func init() {
 
 func main() {
 	dbHost := viper.GetString(`database.host`)
-	dbPort := viper.GetString(`database.port`)
 	dbUser := viper.GetString(`database.user`)
 	dbPass := viper.GetString(`database.pass`)
 	dbName := viper.GetString(`database.name`)
-	connection := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPass, dbHost, dbPort, dbName)
+	connection := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable&", dbUser, dbPass, dbHost, dbName)
 	val := url.Values{}
-	val.Add("parseTime", "1")
-	val.Add("loc", "Asia/Jakarta")
 	dsn := fmt.Sprintf("%s?%s", connection, val.Encode())
-	dbConn, err := sql.Open(`mysql`, dsn)
+	fmt.Println(connection)
+	dbConn, err := sql.Open(`postgres`, dsn)
 
 	if err != nil {
 		log.Fatal(err)
@@ -57,14 +59,22 @@ func main() {
 	}()
 
 	e := echo.New()
-	middL := _categoryHttpDeliveryMiddleware.InitMiddleware()
+	middL := _middleware.InitMiddleware()
 	e.Use(middL.CORS)
 
-	categoryRepo := _categoryRepo.NewMysqlCategoryRepository(dbConn)
-
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
-	au := _categoryUcase.NewCategoryUsecase(categoryRepo, timeoutContext)
-	_categoryHttpDelivery.NewCategoryHandler(e, au)
+
+	categoryRepo := _categoryRepo.NewMysqlCategoryRepository(dbConn)
+	categoryUsecase := _categoryUcase.NewCategoryUsecase(categoryRepo, timeoutContext)
+	_categoryHttpDelivery.NewCategoryHandler(e, categoryUsecase)
+
+	userRepo := _userRepo.NewMysqlUserRepository(dbConn)
+	au := _userUcase.NewUserUsecase(userRepo, timeoutContext)
+	_userHttpDelivery.NewUserHandler(e, au)
+
+	userAddressRepo := _userRepo.NewMysqlUserAddressRepository(dbConn)
+	userAddressUsecase := _userUcase.NewUserAddressUsecase(userAddressRepo, timeoutContext)
+	_userHttpDelivery.NewUserAddressHandler(e, userAddressUsecase)
 
 	_ = e.Start(viper.GetString("server.address"))
 }
