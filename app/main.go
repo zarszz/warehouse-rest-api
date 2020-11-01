@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
+
 	_categoryHttpDelivery "github.com/zarszz/warehouse-rest-api/category/delivery/http"
 	_categoryRepo "github.com/zarszz/warehouse-rest-api/category/repository/mysql"
 	_categoryUcase "github.com/zarszz/warehouse-rest-api/category/usecase"
@@ -18,6 +19,10 @@ import (
 	_userHttpDelivery "github.com/zarszz/warehouse-rest-api/user/delivery"
 	_userRepo "github.com/zarszz/warehouse-rest-api/user/repository/mysql"
 	_userUcase "github.com/zarszz/warehouse-rest-api/user/usecase"
+
+	_warehouseHttpDelivery "github.com/zarszz/warehouse-rest-api/warehouse/delivery"
+	_warehouseRepo "github.com/zarszz/warehouse-rest-api/warehouse/repository/mysql"
+	_warehouseUcase "github.com/zarszz/warehouse-rest-api/warehouse/usecase"
 )
 
 func init() {
@@ -75,6 +80,10 @@ func main() {
 	userAddressRepo := _userRepo.NewMysqlUserAddressRepository(dbConn)
 	userAddressUsecase := _userUcase.NewUserAddressUsecase(userAddressRepo, timeoutContext)
 	_userHttpDelivery.NewUserAddressHandler(e, userAddressUsecase)
+
+	warehouseRepo := _warehouseRepo.NewMysqlWarehouseRepository(dbConn)
+	warehouseUsecase := _warehouseUcase.NewWarehouseUsecase(warehouseRepo, timeoutContext)
+	_warehouseHttpDelivery.NewWarehouseHandler(e, warehouseUsecase)
 
 	_ = e.Start(viper.GetString("server.address"))
 }
