@@ -1,0 +1,17 @@
+{
+    "debug": true,
+    "server": {
+        "address": ":9090"
+    },
+    "context": {
+        "timeout": 10
+    },
+    "sslMode": "disable",
+    "database": {
+        "host": "localhost",
+        "port": "5432",
+        "user": "ucok",
+        "pass": "password",
+        "name": "warehouse"
+    }
+}
