@@ -32,7 +32,7 @@ func (w *warehouseHandler) Fetch(c echo.Context) error {
 
 	warehouses, nextCursor, err := w.warehouseUsecase.Fetch(ctx, int64(num))
 	if err != nil {
-		return utils.HandleResponseIn(c, constant.FAILED, "FAILED TO GET DATA", utils.GetStatusCode(err))
+		return utils.HandleResponseIn(c, constant.FAILED, constant.FAILED_GET_DATA, utils.GetStatusCode(err))
 	}
 
 	c.Response().Header().Set(`X-Cursor`, nextCursor)
@@ -42,13 +42,13 @@ func (w *warehouseHandler) Fetch(c echo.Context) error {
 func (w *warehouseHandler) GetByID(c echo.Context) error {
 	warehouseID := c.Param("id")
 	if warehouseID == "" {
-		return utils.HandleResponseGet(c, constant.FAILED, constant.USER_GET_FAILED, http.StatusBadRequest, domain.ErrBadParamInput.Error())
+		return utils.HandleResponseGet(c, constant.FAILED, constant.FAILED_GET_DATA, http.StatusBadRequest, domain.ErrBadParamInput.Error())
 	}
 	ctx := c.Request().Context()
 
 	warehouse, err := w.warehouseUsecase.GetByID(ctx, warehouseID)
 	if err != nil {
-		return utils.HandleResponseIn(c, constant.FAILED, "FAILED TO GET DATA", utils.GetStatusCode(err))
+		return utils.HandleResponseIn(c, constant.FAILED, constant.FAILED_GET_DATA, utils.GetStatusCode(err))
 	}
 
 	return utils.HandleResponseGet(c, constant.SUCCESS, constant.SUCCESS_LOAD_DATA, http.StatusOK, warehouse)
@@ -59,7 +59,7 @@ func (w *warehouseHandler) Update(c echo.Context) error {
 	warehouse := new(domain.Warehouse)
 
 	if err := c.Bind(warehouse); err != nil || warehouseID == "" {
-		return utils.HandleResponseGet(c, constant.FAILED, constant.USER_GET_FAILED, http.StatusBadRequest, domain.ErrBadParamInput.Error())
+		return utils.HandleResponseGet(c, constant.FAILED, constant.FAILED_GET_DATA, http.StatusBadRequest, domain.ErrBadParamInput.Error())
 	}
 
 	ctx := c.Request().Context()
@@ -68,16 +68,16 @@ func (w *warehouseHandler) Update(c echo.Context) error {
 
 	err := w.warehouseUsecase.Update(ctx, warehouse)
 	if err != nil {
-		return utils.HandleResponseIn(c, constant.FAILED, "FAILED TO UPDATE WAREHOUSE", utils.GetStatusCode(err))
+		return utils.HandleResponseIn(c, constant.FAILED, constant.FAILED_UPDATE_WAREHOUSE, utils.GetStatusCode(err))
 	}
 
-	return utils.HandleResponseIn(c, constant.SUCCESS, "SUCCESS UPDATE WAREHOUSE", http.StatusOK)
+	return utils.HandleResponseIn(c, constant.SUCCESS, constant.SUCCESS_UPDATE_WAREHOUSE, http.StatusOK)
 }
 
 func (w *warehouseHandler) Store(c echo.Context) error {
 	warehouse := new(domain.Warehouse)
 	if err := c.Bind(warehouse); err != nil {
-		return utils.HandleResponseGet(c, constant.FAILED, constant.USER_GET_FAILED, http.StatusBadRequest, domain.ErrBadParamInput.Error())
+		return utils.HandleResponseGet(c, constant.FAILED, constant.FAILED_GET_DATA, http.StatusBadRequest, domain.ErrBadParamInput.Error())
 	}
 
 	ctx := c.Request().Context()
@@ -87,23 +87,23 @@ func (w *warehouseHandler) Store(c echo.Context) error {
 
 	err := w.warehouseUsecase.Store(ctx, warehouse)
 	if err != nil {
-		return utils.HandleResponseIn(c, constant.FAILED, "FAILED TO STORE WAREHOUSE", utils.GetStatusCode(err))
+		return utils.HandleResponseIn(c, constant.FAILED, constant.FAILED_STORE_WAREHOUSE, utils.GetStatusCode(err))
 	}
-	return utils.HandleResponseIn(c, constant.SUCCESS, "SUCCESS STORE A NEW WAREHOUSE", http.StatusOK)
+	return utils.HandleResponseIn(c, constant.SUCCESS, constant.SUCCESS_STORE_WAREHOUSE, http.StatusOK)
 }
 func (w *warehouseHandler) Delete(c echo.Context) error {
 	warehouseID := c.Param("id")
 
 	if warehouseID == "" {
-		return utils.HandleResponseGet(c, constant.FAILED, constant.USER_GET_FAILED, http.StatusBadRequest, domain.ErrBadParamInput.Error())
+		return utils.HandleResponseGet(c, constant.FAILED, constant.FAILED_GET_DATA, http.StatusBadRequest, domain.ErrBadParamInput.Error())
 	}
 
 	ctx := c.Request().Context()
 
 	err := w.warehouseUsecase.Delete(ctx, warehouseID)
 	if err != nil {
-		return utils.HandleResponseIn(c, constant.FAILED, "FAILED TO DELETE WAREHOUSE", utils.GetStatusCode(err))
+		return utils.HandleResponseIn(c, constant.FAILED, constant.FAILED_DELETE_WAREHOUSE, utils.GetStatusCode(err))
 	}
 
-	return utils.HandleResponseIn(c, constant.SUCCESS, "SUCCESS DELETE WAREHOUSE", http.StatusOK)
+	return utils.HandleResponseIn(c, constant.SUCCESS, constant.SUCCESS_DELETE_WAREHOUSE, http.StatusOK)
 }

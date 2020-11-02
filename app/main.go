@@ -23,6 +23,10 @@ import (
 	_warehouseHttpDelivery "github.com/zarszz/warehouse-rest-api/warehouse/delivery"
 	_warehouseRepo "github.com/zarszz/warehouse-rest-api/warehouse/repository/mysql"
 	_warehouseUcase "github.com/zarszz/warehouse-rest-api/warehouse/usecase"
+
+	_roomHttpDelivery "github.com/zarszz/warehouse-rest-api/room/delivery"
+	_roomRepo "github.com/zarszz/warehouse-rest-api/room/repository/mysql"
+	_roomUcase "github.com/zarszz/warehouse-rest-api/room/usecase"
 )
 
 func init() {
@@ -84,6 +88,10 @@ func main() {
 	warehouseRepo := _warehouseRepo.NewMysqlWarehouseRepository(dbConn)
 	warehouseUsecase := _warehouseUcase.NewWarehouseUsecase(warehouseRepo, timeoutContext)
 	_warehouseHttpDelivery.NewWarehouseHandler(e, warehouseUsecase)
+
+	roomRepo := _roomRepo.NewMysqlWarehouseRepository(dbConn)
+	roomUsecase := _roomUcase.NewRoomeUsecase(roomRepo, timeoutContext)
+	_roomHttpDelivery.NewRoomHandler(e, roomUsecase)
 
 	_ = e.Start(viper.GetString("server.address"))
 }
