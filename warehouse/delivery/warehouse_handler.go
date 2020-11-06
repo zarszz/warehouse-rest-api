@@ -22,6 +22,7 @@ func NewWarehouseHandler(e *echo.Echo, warehouseUsecase domain.WarehouseUseCase)
 	e.POST("/warehouses", handler.Store)
 	e.GET("/warehouses", handler.Fetch)
 	e.GET("/warehouses/:id", handler.GetByID)
+	e.GET("/warehouses/:id/rooms", handler.FetchRoom)
 	e.PUT("/warehouses/:id", handler.Update)
 	e.DELETE("/warehouses/:id", handler.Delete)
 }
@@ -36,6 +37,22 @@ func (w *warehouseHandler) Fetch(c echo.Context) error {
 	}
 
 	c.Response().Header().Set(`X-Cursor`, nextCursor)
+	return utils.HandleResponseGet(c, constant.SUCCESS, constant.SUCCESS_LOAD_DATA, http.StatusOK, warehouses)
+}
+
+func (w *warehouseHandler) FetchRoom(c echo.Context) error {
+	warehouseID := c.Param("id")
+	if warehouseID == "" {
+		return utils.HandleResponseGet(c, constant.FAILED, constant.FAILED_GET_DATA, http.StatusBadRequest, domain.ErrBadParamInput.Error())
+	}
+
+	ctx := c.Request().Context()
+
+	warehouses, err := w.warehouseUsecase.FetchRoom(ctx, warehouseID)
+	if err != nil {
+		return utils.HandleResponseIn(c, constant.FAILED, constant.FAILED_GET_DATA, utils.GetStatusCode(err))
+	}
+
 	return utils.HandleResponseGet(c, constant.SUCCESS, constant.SUCCESS_LOAD_DATA, http.StatusOK, warehouses)
 }
 
@@ -85,11 +102,13 @@ func (w *warehouseHandler) Store(c echo.Context) error {
 	warehouse.CreatedAt = time.Now()
 	warehouse.UpdatedAt = time.Now()
 
-	err := w.warehouseUsecase.Store(ctx, warehouse)
+	id, err := w.warehouseUsecase.Store(ctx, warehouse)
 	if err != nil {
 		return utils.HandleResponseIn(c, constant.FAILED, constant.FAILED_STORE_WAREHOUSE, utils.GetStatusCode(err))
 	}
-	return utils.HandleResponseIn(c, constant.SUCCESS, constant.SUCCESS_STORE_WAREHOUSE, http.StatusOK)
+	return utils.HandleResponseGet(c, constant.SUCCESS, constant.SUCCESS_STORE_WAREHOUSE, http.StatusOK, map[string]interface{}{
+		"warehouse_id": id,
+	})
 }
 func (w *warehouseHandler) Delete(c echo.Context) error {
 	warehouseID := c.Param("id")

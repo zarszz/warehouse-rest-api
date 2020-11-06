@@ -24,7 +24,7 @@ type WarehouseAddressUsecase interface {
 }
 
 type WarehouseAddressRepository interface {
-	FetchWarehouseAddress(ctx context.Context, userID string) (res *WarehouseAddress, err error)
+	FetchWarehouseAddress(ctx context.Context, warehouseID string) (res *WarehouseAddress, err error)
 	Update(ctx context.Context, warehouseAddress WarehouseAddress) (err error)
 	Store(ctx context.Context, warehouseAddress WarehouseAddress) (err error)
 }
