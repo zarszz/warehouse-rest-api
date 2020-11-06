@@ -22,6 +22,15 @@ type RoomDetail struct {
 	UpdatedAt   time.Time    `json:"updated_at"`
 }
 
+type RoomBelongsToWarehouse struct {
+	ID            string    `json:"id"`
+	WarehouseID   string    `json:"warehouse_id"`
+	Name          string    `json:"name"`
+	WarehouseName string    `json:"warehouse_name"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
 type RoomUseCase interface {
 	Fetch(ctx context.Context, num int64) (res []Room, nextCursor string, err error)
 	GetByID(ctx context.Context, roomID string) (Room, error)

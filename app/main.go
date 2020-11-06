@@ -89,6 +89,10 @@ func main() {
 	warehouseUsecase := _warehouseUcase.NewWarehouseUsecase(warehouseRepo, timeoutContext)
 	_warehouseHttpDelivery.NewWarehouseHandler(e, warehouseUsecase)
 
+	warehouseAddressRepo := _warehouseRepo.NewMysqlWarehouseAddressRepository(dbConn)
+	warehouseAddressUsecase := _warehouseUcase.NewWarehouseAddressUsecase(warehouseAddressRepo, timeoutContext)
+	_warehouseHttpDelivery.NewUserAddressHandler(e, warehouseAddressUsecase)
+
 	roomRepo := _roomRepo.NewMysqlWarehouseRepository(dbConn)
 	roomUsecase := _roomUcase.NewRoomeUsecase(roomRepo, timeoutContext)
 	_roomHttpDelivery.NewRoomHandler(e, roomUsecase)

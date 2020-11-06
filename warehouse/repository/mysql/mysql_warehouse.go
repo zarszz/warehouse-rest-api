@@ -37,10 +37,19 @@ func (w *mysqlWarehouseRepository) fetch(ctx context.Context, query string, args
 		warehouse := domain.Warehouse{}
 		err := rows.Scan(
 			&warehouse.ID,
+			&warehouse.Address.AddressID,
 			&warehouse.Name,
+			&warehouse.Address.State,
+			&warehouse.Address.Address,
+			&warehouse.Address.City,
+			&warehouse.Address.Country,
+			&warehouse.Address.PostalCode,
 			&warehouse.CreatedAt,
 			&warehouse.UpdatedAt,
+			&warehouse.Address.CreatedAt,
+			&warehouse.Address.UpdatedAt,
 		)
+		warehouse.Address.WarehouseID = warehouse.ID
 		if err != nil {
 			logrus.Error(err)
 			return nil, err
@@ -51,7 +60,21 @@ func (w *mysqlWarehouseRepository) fetch(ctx context.Context, query string, args
 }
 
 func (w *mysqlWarehouseRepository) Fetch(ctx context.Context, num int64) (res []domain.Warehouse, nextCursor string, err error) {
-	query := `SELECT id, warehouse_name, created_at, updated_at FROM warehouses LIMIT $1`
+	query := `SELECT warehouses.id,
+				COALESCE(wa.id, ''),
+				warehouses.warehouse_name,
+				COALESCE(wa.state, ''),
+				COALESCE(wa.address, ''),
+				COALESCE(wa.city, ''),
+				COALESCE(wa.country, ''),
+				COALESCE(wa.postal_code,''),
+				warehouses.created_at,
+				warehouses.updated_at,
+				COALESCE(wa.created_at, now()),
+				COALESCE(wa.updated_at, now())
+			 FROM warehouses
+				LEFT JOIN warehouse_addresses wa ON warehouses.id = wa.warehouse_id
+			 LIMIT $1;`
 	if err != nil {
 		return nil, "", domain.ErrBadParamInput
 	}
@@ -64,8 +87,67 @@ func (w *mysqlWarehouseRepository) Fetch(ctx context.Context, num int64) (res []
 	}
 	return
 }
+
+func (w *mysqlWarehouseRepository) FetchRoom(ctx context.Context, warehouseID string) (res domain.WarehouseDetail, err error) {
+	query := `SELECT
+				r.id, warehouses.warehouse_name, warehouses.id, r.name, r.created_at, r.updated_at
+				FROM warehouses JOIN rooms r on warehouses.id = r.warehouse_id
+			WHERE warehouses.id = $1;`
+	warehouseData, err := w.GetByID(ctx, warehouseID)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	rows, err := w.Conn.QueryContext(ctx, query, warehouseID)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+	}()
+	res.ID = warehouseData.ID
+	res.Name = warehouseData.Name
+	res.Address = warehouseData.Address
+	for rows.Next() {
+		room := domain.RoomBelongsToWarehouse{}
+		errResult := rows.Scan(
+			&room.ID,
+			&room.WarehouseName,
+			&room.WarehouseID,
+			&room.Name,
+			&room.CreatedAt,
+			&room.UpdatedAt,
+		)
+		if errResult != nil {
+			logrus.Error(errResult)
+			return
+		}
+		res.Rooms = append(res.Rooms, room)
+	}
+	return
+}
+
 func (w *mysqlWarehouseRepository) GetByID(ctx context.Context, warehouseID string) (res domain.Warehouse, err error) {
-	query := `SELECT id, warehouse_name, created_at, updated_at FROM warehouses WHERE id = $1;`
+	query := `SELECT warehouses.id,
+				COALESCE(wa.id, ''),
+				warehouses.warehouse_name,
+				COALESCE(wa.state, ''),
+				COALESCE(wa.address, ''),
+				COALESCE(wa.city, ''),
+				COALESCE(wa.country, ''),
+				COALESCE(wa.postal_code,''),
+				warehouses.created_at,
+				warehouses.updated_at,
+				COALESCE(wa.created_at, now()),
+				COALESCE(wa.updated_at, now())
+			 FROM warehouses
+				LEFT JOIN warehouse_addresses wa ON warehouses.id = wa.warehouse_id
+			 WHERE warehouses.id = $1;`
 	list, err := w.fetch(ctx, query, warehouseID)
 	if err != nil {
 		return domain.Warehouse{}, err
@@ -97,13 +179,20 @@ func (w *mysqlWarehouseRepository) Update(ctx context.Context, warehouse *domain
 	}
 	return
 }
-func (w *mysqlWarehouseRepository) Store(ctx context.Context, warehouse *domain.Warehouse) (err error) {
-	query := `INSERT INTO warehouses(id, warehouse_name, created_at, updated_at) VALUES($1, $2, $3, $4);`
+func (w *mysqlWarehouseRepository) Store(ctx context.Context, warehouse *domain.Warehouse) (id string, err error) {
+	query := `INSERT INTO warehouses(id, warehouse_name, created_at, updated_at) VALUES($1, $2, $3, $4) RETURNING id;`
 	stmt, err := w.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
-	_, err = stmt.ExecContext(ctx, warehouse.ID, warehouse.Name, warehouse.CreatedAt, warehouse.UpdatedAt)
+	res, errQ := stmt.QueryContext(ctx, warehouse.ID, warehouse.Name, warehouse.CreatedAt, warehouse.UpdatedAt)
+	err = errQ
+	for res.Next() {
+		err = res.Scan(&id)
+		if err != nil {
+			return
+		}
+	}
 	if err != nil {
 		return
 	}
