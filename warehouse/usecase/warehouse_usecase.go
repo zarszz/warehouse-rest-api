@@ -28,7 +28,7 @@ func (w *warehouseUsecase) Fetch(ctx context.Context, num int64) (warehouses []d
 	return w.warehouseRepo.Fetch(ctx, num)
 }
 
-func (w *warehouseUsecase) FetchRoom(ctx context.Context, warehouseID string) (warehouseDetail domain.WarehouseDetail, err error) {
+func (w *warehouseUsecase) FetchRoom(ctx context.Context, warehouseID string) (warehouseDetail domain.WarehouseRoom, err error) {
 	ctx, cancel := context.WithTimeout(ctx, w.contextTimeout)
 	defer cancel()
 	return w.warehouseRepo.FetchRoom(ctx, warehouseID)

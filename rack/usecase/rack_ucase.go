@@ -46,6 +46,12 @@ func (a *rackUsecase) GetByID(c context.Context, id string) (res domain.Rack, er
 	return
 }
 
+func (a *rackUsecase) GetByRoomID(c context.Context, roomID string) ([]domain.RackDetail, error) {
+	ctx, cancel := context.WithTimeout(c, a.contextTimeout)
+	defer cancel()
+	return a.rackRepo.GetByRoomID(ctx, roomID)
+}
+
 func (a *rackUsecase) Update(c context.Context, category *domain.Rack) (err error) {
 	ctx, cancel := context.WithTimeout(c, a.contextTimeout)
 	defer cancel()

@@ -13,16 +13,23 @@ import (
 
 type warehouseHandler struct {
 	warehouseUsecase domain.WarehouseUseCase
+	roomUsecase      domain.RoomUseCase
+	rackUsecase      domain.RackUseCase
+	itemUsecase      domain.ItemUseCase
 }
 
-func NewWarehouseHandler(e *echo.Echo, warehouseUsecase domain.WarehouseUseCase) {
+func NewWarehouseHandler(e *echo.Echo, warehouseUsecase domain.WarehouseUseCase, roomUsecase domain.RoomUseCase, rackUsecase domain.RackUseCase, itemUsecase domain.ItemUseCase) {
 	handler := &warehouseHandler{
 		warehouseUsecase: warehouseUsecase,
+		roomUsecase:      roomUsecase,
+		rackUsecase:      rackUsecase,
+		itemUsecase:      itemUsecase,
 	}
 	e.POST("/warehouses", handler.Store)
 	e.GET("/warehouses", handler.Fetch)
 	e.GET("/warehouses/:id", handler.GetByID)
 	e.GET("/warehouses/:id/rooms", handler.FetchRoom)
+	e.GET("/warehouses/detail", handler.FetchDetail)
 	e.PUT("/warehouses/:id", handler.Update)
 	e.DELETE("/warehouses/:id", handler.Delete)
 }
@@ -38,6 +45,50 @@ func (w *warehouseHandler) Fetch(c echo.Context) error {
 
 	c.Response().Header().Set(`X-Cursor`, nextCursor)
 	return utils.HandleResponseGet(c, constant.SUCCESS, constant.SUCCESS_LOAD_DATA, http.StatusOK, warehouses)
+}
+
+func (w *warehouseHandler) FetchDetail(c echo.Context) error {
+	num, _ := strconv.Atoi(c.QueryParam("num"))
+	ctx := c.Request().Context()
+	warehouses, nextCursor, err := w.warehouseUsecase.Fetch(ctx, int64(num))
+	if err != nil {
+		return utils.HandleResponseIn(c, constant.FAILED, constant.FAILED_GET_DATA, utils.GetStatusCode(err))
+	}
+
+	var warehouseDetails []domain.WarehouseDetail
+	for _, warehouse := range warehouses {
+		warehouseDetail := new(domain.WarehouseDetail)
+		warehouseDetail.ID = warehouse.ID
+		warehouseDetail.Name = warehouse.Name
+		warehouseDetail.Address = warehouse.Address
+
+		rooms, err := w.roomUsecase.GetByWarehouseID(ctx, warehouseDetail.ID)
+		if err != nil {
+			return utils.HandleResponseIn(c, constant.FAILED, constant.FAILED_GET_DATA, utils.GetStatusCode(err))
+		}
+		warehouseDetail.Rooms = rooms
+		for i := 0; i < len(warehouseDetail.Rooms); i++ {
+			racks, err := w.rackUsecase.GetByRoomID(ctx, warehouseDetail.Rooms[i].ID)
+			if err != nil {
+				return utils.HandleResponseIn(c, constant.FAILED, constant.FAILED_GET_DATA, utils.GetStatusCode(err))
+			}
+			warehouseDetail.Rooms[i].Racks = racks
+			if len(warehouseDetail.Rooms[i].Racks) > 0 {
+				for j := 0; j < len(warehouseDetail.Rooms[i].Racks); j++ {
+					items, err := w.itemUsecase.GetByRackID(ctx, warehouseDetail.Rooms[i].Racks[j].ID)
+					if err != nil {
+						return utils.HandleResponseIn(c, constant.FAILED, constant.FAILED_GET_DATA, utils.GetStatusCode(err))
+					}
+					warehouseDetail.Rooms[i].Racks[j].Items = items
+				}
+			}
+		}
+		warehouseDetail.Rooms = rooms
+		warehouseDetails = append(warehouseDetails, *warehouseDetail)
+	}
+
+	c.Response().Header().Set(`X-Cursor`, nextCursor)
+	return utils.HandleResponseGet(c, constant.SUCCESS, constant.SUCCESS_LOAD_DATA, http.StatusOK, warehouseDetails)
 }
 
 func (w *warehouseHandler) FetchRoom(c echo.Context) error {

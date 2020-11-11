@@ -19,6 +19,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/stretchr/testify v1.6.1
+	github.com/tsenart/vegeta/v12 v12.8.4
 	golang.org/dl v0.0.0-20201014211523-4da6277e5455 // indirect
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208

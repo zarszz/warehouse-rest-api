@@ -92,6 +92,44 @@ func (m *mysqlRackRepository) GetByID(ctx context.Context, id string) (res domai
 	return
 }
 
+func (m *mysqlRackRepository) GetByRoomID(ctx context.Context, roomID string) ([]domain.RackDetail, error) {
+	query := `SELECT id, room_id, name, updated_at, created_at FROM racks WHERE room_id = $1`
+
+	rows, err := m.Conn.QueryContext(ctx, query, roomID)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		errRow := rows.Close()
+		if errRow != nil {
+			logrus.Error(errRow)
+		}
+	}()
+	list := make([]domain.RackDetail, 0)
+	for rows.Next() {
+		t := domain.RackDetail{}
+		err = rows.Scan(
+			&t.ID,
+			&t.RoomID,
+			&t.Name,
+			&t.CreatedAt,
+			&t.UpdatedAt,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		list = append(list, t)
+	}
+	if err != nil {
+		return []domain.RackDetail{}, err
+	}
+	return list, nil
+}
+
 func (m *mysqlRackRepository) Store(ctx context.Context, rack *domain.Rack) (err error) {
 	query := `INSERT INTO racks(id, room_id, name, updated_at, created_at) VALUES($1, $2, $3, $4, $5)`
 	stmt, err := m.Conn.PrepareContext(ctx, query)

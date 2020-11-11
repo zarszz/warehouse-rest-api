@@ -32,6 +32,12 @@ func (r *roomUsecase) GetByID(ctx context.Context, roomID string) (room domain.R
 	defer cancel()
 	return r.roomRepo.GetByID(ctx, roomID)
 }
+
+func (r *roomUsecase) GetByWarehouseID(ctx context.Context, warehouseID string) (rooms []domain.RoomDetail, err error) {
+	ctx, cancel := context.WithTimeout(ctx, r.contextTimeout)
+	defer cancel()
+	return r.roomRepo.GetByWarehouseID(ctx, warehouseID)
+}
 func (r *roomUsecase) Update(ctx context.Context, room *domain.Room) error {
 	ctx, cancel := context.WithTimeout(ctx, r.contextTimeout)
 	defer cancel()

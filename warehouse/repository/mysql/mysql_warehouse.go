@@ -88,7 +88,7 @@ func (w *mysqlWarehouseRepository) Fetch(ctx context.Context, num int64) (res []
 	return
 }
 
-func (w *mysqlWarehouseRepository) FetchRoom(ctx context.Context, warehouseID string) (res domain.WarehouseDetail, err error) {
+func (w *mysqlWarehouseRepository) FetchRoom(ctx context.Context, warehouseID string) (res domain.WarehouseRoom, err error) {
 	query := `SELECT
 				r.id, warehouses.warehouse_name, warehouses.id, r.name, r.created_at, r.updated_at
 				FROM warehouses JOIN rooms r on warehouses.id = r.warehouse_id
