@@ -28,6 +28,10 @@ import (
 	_roomRepo "github.com/zarszz/warehouse-rest-api/room/repository/mysql"
 	_roomUcase "github.com/zarszz/warehouse-rest-api/room/usecase"
 
+	_itemHttpDelivery "github.com/zarszz/warehouse-rest-api/item/delivery"
+	_itemRepo "github.com/zarszz/warehouse-rest-api/item/repository/mysql"
+	_itemUcase "github.com/zarszz/warehouse-rest-api/item/usecase"
+
 	_rackHttpDelivery "github.com/zarszz/warehouse-rest-api/rack/delivery/http"
 	_rackRepo "github.com/zarszz/warehouse-rest-api/rack/repository/mysql"
 	_rackUcase "github.com/zarszz/warehouse-rest-api/rack/usecase"
@@ -89,10 +93,6 @@ func main() {
 	userAddressUsecase := _userUcase.NewUserAddressUsecase(userAddressRepo, timeoutContext)
 	_userHttpDelivery.NewUserAddressHandler(e, userAddressUsecase)
 
-	warehouseRepo := _warehouseRepo.NewMysqlWarehouseRepository(dbConn)
-	warehouseUsecase := _warehouseUcase.NewWarehouseUsecase(warehouseRepo, timeoutContext)
-	_warehouseHttpDelivery.NewWarehouseHandler(e, warehouseUsecase)
-
 	warehouseAddressRepo := _warehouseRepo.NewMysqlWarehouseAddressRepository(dbConn)
 	warehouseAddressUsecase := _warehouseUcase.NewWarehouseAddressUsecase(warehouseAddressRepo, timeoutContext)
 	_warehouseHttpDelivery.NewUserAddressHandler(e, warehouseAddressUsecase)
@@ -104,6 +104,14 @@ func main() {
 	rackRepo := _rackRepo.NewMysqlRackRepository(dbConn)
 	rackUsecase := _rackUcase.NewRackUsecase(rackRepo, timeoutContext)
 	_rackHttpDelivery.NewRackHandler(e, rackUsecase)
+
+	itemRepo := _itemRepo.NewMysqlItemRepository(dbConn)
+	itemUsecase := _itemUcase.NewItemUsecase(itemRepo, timeoutContext)
+	_itemHttpDelivery.NewItemHandler(e, itemUsecase)
+
+	warehouseRepo := _warehouseRepo.NewMysqlWarehouseRepository(dbConn)
+	warehouseUsecase := _warehouseUcase.NewWarehouseUsecase(warehouseRepo, timeoutContext)
+	_warehouseHttpDelivery.NewWarehouseHandler(e, warehouseUsecase, roomUsecase, rackUsecase, itemUsecase)
 
 	_ = e.Start(viper.GetString("server.address"))
 }

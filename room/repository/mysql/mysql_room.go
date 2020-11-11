@@ -78,6 +78,43 @@ func (w *mysqlRoomRepository) GetByID(ctx context.Context, roomID string) (res d
 	}
 	return
 }
+
+func (w *mysqlRoomRepository) GetByWarehouseID(ctx context.Context, warehouseID string) (res []domain.RoomDetail, err error) {
+	query := `SELECT id, warehouse_id, name, created_at, updated_at FROM rooms WHERE warehouse_id = $1`
+	rows, err := w.Conn.QueryContext(ctx, query, warehouseID)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		errRow := rows.Close()
+		if errRow != nil {
+			logrus.Error(errRow)
+		}
+	}()
+
+	for rows.Next() {
+		room := domain.RoomDetail{}
+		err := rows.Scan(
+			&room.ID,
+			&room.WarehouseID,
+			&room.Name,
+			&room.CreatedAt,
+			&room.UpdatedAt,
+		)
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		res = append(res, room)
+	}
+	if len(res) == 0 {
+		return []domain.RoomDetail{}, nil
+	}
+	return
+}
+
 func (w *mysqlRoomRepository) Update(ctx context.Context, room *domain.Room) (err error) {
 	query := `UPDATE rooms SET name = $1, updated_at = $2 WHERE id = $3`
 	stmt, err := w.Conn.PrepareContext(ctx, query)

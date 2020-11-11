@@ -13,16 +13,23 @@ type Warehouse struct {
 	UpdatedAt time.Time        `json:"updated_at"`
 }
 
-type WarehouseDetail struct {
+type WarehouseRoom struct {
 	ID      string                   `json:"id"`
 	Name    string                   `json:"name"`
 	Address WarehouseAddress         `json:"address"`
 	Rooms   []RoomBelongsToWarehouse `json:"rooms"`
 }
 
+type WarehouseDetail struct {
+	ID      string           `json:"id"`
+	Name    string           `json:"name"`
+	Address WarehouseAddress `json:"address"`
+	Rooms   []RoomDetail     `json:"rooms"`
+}
+
 type WarehouseUseCase interface {
 	Fetch(ctx context.Context, num int64) (res []Warehouse, nextCursor string, err error)
-	FetchRoom(ctx context.Context, warehouseID string) (res WarehouseDetail, err error)
+	FetchRoom(ctx context.Context, warehouseID string) (res WarehouseRoom, err error)
 	GetByID(ctx context.Context, warehouseID string) (Warehouse, error)
 	Update(ctx context.Context, warehouse *Warehouse) error
 	Store(ctx context.Context, warehouse *Warehouse) (id string, err error)
@@ -31,7 +38,7 @@ type WarehouseUseCase interface {
 
 type WarehouseRepository interface {
 	Fetch(ctx context.Context, num int64) ([]Warehouse, string, error)
-	FetchRoom(ctx context.Context, warehouseID string) (WarehouseDetail, error)
+	FetchRoom(ctx context.Context, warehouseID string) (WarehouseRoom, error)
 	GetByID(ctx context.Context, warehouseID string) (Warehouse, error)
 	Update(ctx context.Context, warehouse *Warehouse) error
 	Store(ctx context.Context, warehouse *Warehouse) (id string, err error)

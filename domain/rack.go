@@ -25,6 +25,7 @@ type RackDetail struct {
 type RackUseCase interface {
 	Fetch(ctx context.Context, cursor string, num int64) (res []Rack, nextCursor string, err error)
 	GetByID(ctx context.Context, rackID string) (Rack, error)
+	GetByRoomID(ctx context.Context, roomID string) ([]RackDetail, error)
 	Update(ctx context.Context, rack *Rack) error
 	Store(ctx context.Context, rack *Rack) error
 	Delete(ctx context.Context, rackID string) error
@@ -33,6 +34,7 @@ type RackUseCase interface {
 type RackRepository interface {
 	Fetch(ctx context.Context, cursor string, num int64) ([]Rack, string, error)
 	GetByID(ctx context.Context, rackID string) (Rack, error)
+	GetByRoomID(ctx context.Context, roomID string) ([]RackDetail, error)
 	Update(ctx context.Context, rack *Rack) error
 	Store(ctx context.Context, rack *Rack) error
 	Delete(ctx context.Context, rackID string) error

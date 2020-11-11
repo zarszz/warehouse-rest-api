@@ -34,6 +34,7 @@ type RoomBelongsToWarehouse struct {
 type RoomUseCase interface {
 	Fetch(ctx context.Context, num int64) (res []Room, nextCursor string, err error)
 	GetByID(ctx context.Context, roomID string) (Room, error)
+	GetByWarehouseID(ctx context.Context, warehouseID string) (res []RoomDetail, err error)
 	Update(ctx context.Context, room *Room) error
 	Store(ctx context.Context, room *Room) error
 	Delete(ctx context.Context, roomID string) error
@@ -42,6 +43,7 @@ type RoomUseCase interface {
 type RoomRepository interface {
 	Fetch(ctx context.Context, num int64) ([]Room, string, error)
 	GetByID(ctx context.Context, roomID string) (Room, error)
+	GetByWarehouseID(ctx context.Context, warehouseID string) ([]RoomDetail, error)
 	Update(ctx context.Context, room *Room) error
 	Store(ctx context.Context, room *Room) error
 	Delete(ctx context.Context, roomID string) error
