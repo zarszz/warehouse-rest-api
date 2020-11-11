@@ -50,11 +50,12 @@ func init() {
 }
 
 func main() {
-	dbHost := viper.GetString(`database.host`)
-	dbUser := viper.GetString(`database.user`)
-	dbPass := viper.GetString(`database.pass`)
-	dbName := viper.GetString(`database.name`)
+	dbHost := viper.GetString(`database_prod.host`)
+	dbUser := viper.GetString(`database_prod.user`)
+	dbPass := viper.GetString(`database_prod.pass`)
+	dbName := viper.GetString(`database_prod.name`)
 	connection := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable&", dbUser, dbPass, dbHost, dbName)
+	fmt.Println(connection)
 	val := url.Values{}
 	dsn := fmt.Sprintf("%s?%s", connection, val.Encode())
 	fmt.Println(connection)

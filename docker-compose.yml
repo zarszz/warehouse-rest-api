@@ -1,0 +1,40 @@
+version: "2.1"
+
+networks:
+  wms:
+    driver: bridge
+
+services:
+  wms:
+    build: .
+    container_name: "wms"
+    ports:
+      - "8082:9090"
+    networks:
+      - wms
+    depends_on:
+      wms_db:
+        condition: service_healthy
+    restart: always
+    links:
+      - "wms_db"
+  wms_db:
+    container_name: wms_db
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: warehouse
+    volumes:
+      - postgres-data:/var/lib/postgres/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "8091:5432"
+    networks:
+      - wms
+volumes:
+  postgres-data:
