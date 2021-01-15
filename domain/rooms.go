@@ -38,6 +38,7 @@ type RoomUseCase interface {
 	Update(ctx context.Context, room *Room) error
 	Store(ctx context.Context, room *Room) error
 	Delete(ctx context.Context, roomID string) error
+	IsRoomExist(ctx context.Context, roomID string) (bool, error)
 }
 
 type RoomRepository interface {
@@ -47,4 +48,5 @@ type RoomRepository interface {
 	Update(ctx context.Context, room *Room) error
 	Store(ctx context.Context, room *Room) error
 	Delete(ctx context.Context, roomID string) error
+	IsRoomExist(ctx context.Context, roomID string) (bool, error)
 }

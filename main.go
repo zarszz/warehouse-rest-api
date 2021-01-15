@@ -107,10 +107,11 @@ func main() {
 
 	itemRepo := _itemRepo.NewMysqlItemRepository(dbConn)
 	itemUsecase := _itemUcase.NewItemUsecase(itemRepo, timeoutContext)
-	_itemHttpDelivery.NewItemHandler(e, itemUsecase)
 
 	warehouseRepo := _warehouseRepo.NewMysqlWarehouseRepository(dbConn)
 	warehouseUsecase := _warehouseUcase.NewWarehouseUsecase(warehouseRepo, timeoutContext)
+
+	_itemHttpDelivery.NewItemHandler(e, itemUsecase, warehouseUsecase, roomUsecase)
 	_warehouseHttpDelivery.NewWarehouseHandler(e, warehouseUsecase, roomUsecase, rackUsecase, itemUsecase)
 
 	_ = e.Start(viper.GetString("server.address"))

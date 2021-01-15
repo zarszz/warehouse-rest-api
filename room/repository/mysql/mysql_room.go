@@ -172,3 +172,15 @@ func (w *mysqlRoomRepository) Delete(ctx context.Context, roomID string) (err er
 
 	return
 }
+
+func (w *mysqlRoomRepository) IsRoomExist(ctx context.Context, roomID string) (bool, error) {
+	query := "SELECT * FROM rooms WHERE id = $1"
+	list, err := w.fetch(ctx, query, roomID)
+	if err != nil {
+		return false, err
+	}
+	if len(list) <= 0 {
+		return false, nil
+	}
+	return true, nil
+}

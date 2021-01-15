@@ -53,3 +53,9 @@ func (r *roomUsecase) Delete(ctx context.Context, roomID string) error {
 	defer cancel()
 	return r.roomRepo.Delete(ctx, roomID)
 }
+
+func (r *roomUsecase) IsRoomExist(ctx context.Context, roomID string) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.contextTimeout)
+	defer cancel()
+	return r.roomRepo.IsRoomExist(ctx, roomID)
+}
