@@ -1,4 +1,4 @@
-package mysql
+package repository
 
 import (
 	"context"
@@ -11,16 +11,16 @@ import (
 	"github.com/zarszz/warehouse-rest-api/rack/repository"
 )
 
-type mysqlRackRepository struct {
+type postgresqlRackRepository struct {
 	Conn *sql.DB
 }
 
-// NewMysqlRackRepository will create an object that represent the article.Repository interface
-func NewMysqlRackRepository(Conn *sql.DB) domain.RackRepository {
-	return &mysqlRackRepository{Conn}
+// NewpostgresqlRackRepository will create an object that represent the article.Repository interface
+func NewPostgresqlRackRepository(Conn *sql.DB) domain.RackRepository {
+	return &postgresqlRackRepository{Conn}
 }
 
-func (m *mysqlRackRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.Rack, err error) {
+func (m *postgresqlRackRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.Rack, err error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -55,7 +55,7 @@ func (m *mysqlRackRepository) fetch(ctx context.Context, query string, args ...i
 	return result, nil
 }
 
-func (m *mysqlRackRepository) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Rack, nextCursor string, err error) {
+func (m *postgresqlRackRepository) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Rack, nextCursor string, err error) {
 	query := `SELECT id, room_id, name, created_at, updated_at
   						FROM racks WHERE created_at > $1 ORDER BY created_at LIMIT $2 `
 
@@ -75,7 +75,7 @@ func (m *mysqlRackRepository) Fetch(ctx context.Context, cursor string, num int6
 
 	return
 }
-func (m *mysqlRackRepository) GetByID(ctx context.Context, id string) (res domain.Rack, err error) {
+func (m *postgresqlRackRepository) GetByID(ctx context.Context, id string) (res domain.Rack, err error) {
 	query := `SELECT id, room_id, name, updated_at, created_at FROM racks WHERE id = $1`
 
 	list, err := m.fetch(ctx, query, id)
@@ -92,7 +92,7 @@ func (m *mysqlRackRepository) GetByID(ctx context.Context, id string) (res domai
 	return
 }
 
-func (m *mysqlRackRepository) GetByRoomID(ctx context.Context, roomID string) ([]domain.RackDetail, error) {
+func (m *postgresqlRackRepository) GetByRoomID(ctx context.Context, roomID string) ([]domain.RackDetail, error) {
 	query := `SELECT id, room_id, name, updated_at, created_at FROM racks WHERE room_id = $1`
 
 	rows, err := m.Conn.QueryContext(ctx, query, roomID)
@@ -130,7 +130,7 @@ func (m *mysqlRackRepository) GetByRoomID(ctx context.Context, roomID string) ([
 	return list, nil
 }
 
-func (m *mysqlRackRepository) Store(ctx context.Context, rack *domain.Rack) (err error) {
+func (m *postgresqlRackRepository) Store(ctx context.Context, rack *domain.Rack) (err error) {
 	query := `INSERT INTO racks(id, room_id, name, updated_at, created_at) VALUES($1, $2, $3, $4, $5)`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -144,7 +144,7 @@ func (m *mysqlRackRepository) Store(ctx context.Context, rack *domain.Rack) (err
 	return
 }
 
-func (m *mysqlRackRepository) Delete(ctx context.Context, id string) (err error) {
+func (m *postgresqlRackRepository) Delete(ctx context.Context, id string) (err error) {
 	query := "DELETE FROM racks WHERE id = $1"
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
@@ -169,7 +169,7 @@ func (m *mysqlRackRepository) Delete(ctx context.Context, id string) (err error)
 
 	return
 }
-func (m *mysqlRackRepository) Update(ctx context.Context, rack *domain.Rack) (err error) {
+func (m *postgresqlRackRepository) Update(ctx context.Context, rack *domain.Rack) (err error) {
 	query := `UPDATE racks set name=$1, updated_at=$2 WHERE id = $3`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)

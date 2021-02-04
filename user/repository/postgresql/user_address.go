@@ -9,15 +9,15 @@ import (
 	"github.com/zarszz/warehouse-rest-api/domain"
 )
 
-type mysqlUserAddressRepository struct {
+type postgresqlUserAddressRepository struct {
 	Conn *sql.DB
 }
 
-func NewMysqlUserAddressRepository(Conn *sql.DB) domain.UserAddressRepository {
-	return &mysqlUserAddressRepository{Conn: Conn}
+func NewPostgresqlUserAddressRepository(Conn *sql.DB) domain.UserAddressRepository {
+	return &postgresqlUserAddressRepository{Conn: Conn}
 }
 
-func (m *mysqlUserAddressRepository) fetchUserAddress(ctx context.Context, query string, args ...interface{}) (result *domain.UserAddress, err error) {
+func (m *postgresqlUserAddressRepository) fetchUserAddress(ctx context.Context, query string, args ...interface{}) (result *domain.UserAddress, err error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -54,7 +54,7 @@ func (m *mysqlUserAddressRepository) fetchUserAddress(ctx context.Context, query
 	return result, nil
 }
 
-func (m *mysqlUserAddressRepository) FetchUserAddress(ctx context.Context, userID string) (res *domain.UserAddress, err error) {
+func (m *postgresqlUserAddressRepository) FetchUserAddress(ctx context.Context, userID string) (res *domain.UserAddress, err error) {
 	query := `SELECT
 				address_id, user_id, address, city, state, country, postal_code, created_at, updated_at			  
 			  FROM user_addresses
@@ -70,7 +70,7 @@ func (m *mysqlUserAddressRepository) FetchUserAddress(ctx context.Context, userI
 	return
 }
 
-func (m *mysqlUserAddressRepository) Store(ctx context.Context, userAddress domain.UserAddress) (err error) {
+func (m *postgresqlUserAddressRepository) Store(ctx context.Context, userAddress domain.UserAddress) (err error) {
 	query := `INSERT INTO user_addresses(address_id, user_id, address, city, state, country, postal_code, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
@@ -85,7 +85,7 @@ func (m *mysqlUserAddressRepository) Store(ctx context.Context, userAddress doma
 	return
 }
 
-func (m *mysqlUserAddressRepository) Update(ctx context.Context, userAddress domain.UserAddress) (err error) {
+func (m *postgresqlUserAddressRepository) Update(ctx context.Context, userAddress domain.UserAddress) (err error) {
 	query := `
 		UPDATE 
 			user_addresses 

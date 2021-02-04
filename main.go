@@ -78,30 +78,30 @@ func main() {
 
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 
-	userRepo := _userRepo.NewMysqlUserRepository(dbConn)
+	userRepo := _userRepo.NewPostgresqlUserRepository(dbConn)
 	au := _userUcase.NewUserUsecase(userRepo, timeoutContext)
 	_userHttpDelivery.NewUserHandler(e, au)
 
-	userAddressRepo := _userRepo.NewMysqlUserAddressRepository(dbConn)
+	userAddressRepo := _userRepo.NewPostgresqlUserAddressRepository(dbConn)
 	userAddressUsecase := _userUcase.NewUserAddressUsecase(userAddressRepo, timeoutContext)
 	_userHttpDelivery.NewUserAddressHandler(e, userAddressUsecase)
 
-	warehouseAddressRepo := _warehouseRepo.NewMysqlWarehouseAddressRepository(dbConn)
+	warehouseAddressRepo := _warehouseRepo.NewPostgresqlWarehouseAddressRepository(dbConn)
 	warehouseAddressUsecase := _warehouseUcase.NewWarehouseAddressUsecase(warehouseAddressRepo, timeoutContext)
 	_warehouseHttpDelivery.NewUserAddressHandler(e, warehouseAddressUsecase)
 
-	roomRepo := _roomRepo.NewMysqlWarehouseRepository(dbConn)
+	roomRepo := _roomRepo.NewPostgresqlRoomRepositoryWarehouseRepository(dbConn)
 	roomUsecase := _roomUcase.NewRoomeUsecase(roomRepo, timeoutContext)
 	_roomHttpDelivery.NewRoomHandler(e, roomUsecase)
 
-	rackRepo := _rackRepo.NewMysqlRackRepository(dbConn)
+	rackRepo := _rackRepo.NewPostgresqlRackRepository(dbConn)
 	rackUsecase := _rackUcase.NewRackUsecase(rackRepo, timeoutContext)
 	_rackHttpDelivery.NewRackHandler(e, rackUsecase)
 
-	itemRepo := _itemRepo.NewMysqlItemRepository(dbConn)
+	itemRepo := _itemRepo.NewPostgresqlItemRepository(dbConn)
 	itemUsecase := _itemUcase.NewItemUsecase(itemRepo, timeoutContext)
 
-	warehouseRepo := _warehouseRepo.NewMysqlWarehouseRepository(dbConn)
+	warehouseRepo := _warehouseRepo.NewPostgresqlWarehouseRepository(dbConn)
 	warehouseUsecase := _warehouseUcase.NewWarehouseUsecase(warehouseRepo, timeoutContext)
 
 	_itemHttpDelivery.NewItemHandler(e, itemUsecase, warehouseUsecase, roomUsecase)

@@ -10,15 +10,15 @@ import (
 	"github.com/zarszz/warehouse-rest-api/room/repository"
 )
 
-type mysqlRoomRepository struct {
+type postgresqlRoomRepository struct {
 	Conn *sql.DB
 }
 
-func NewMysqlWarehouseRepository(Conn *sql.DB) domain.RoomRepository {
-	return &mysqlRoomRepository{Conn: Conn}
+func NewPostgresqlRoomRepositoryWarehouseRepository(Conn *sql.DB) domain.RoomRepository {
+	return &postgresqlRoomRepository{Conn: Conn}
 }
 
-func (w *mysqlRoomRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.Room, err error) {
+func (w *postgresqlRoomRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.Room, err error) {
 	rows, err := w.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -51,7 +51,7 @@ func (w *mysqlRoomRepository) fetch(ctx context.Context, query string, args ...i
 	return
 }
 
-func (w *mysqlRoomRepository) Fetch(ctx context.Context, num int64) (res []domain.Room, nextCursor string, err error) {
+func (w *postgresqlRoomRepository) Fetch(ctx context.Context, num int64) (res []domain.Room, nextCursor string, err error) {
 	query := `SELECT id, warehouse_id, name, created_at, updated_at FROM rooms LIMIT $1`
 	if err != nil {
 		return nil, "", domain.ErrBadParamInput
@@ -65,7 +65,7 @@ func (w *mysqlRoomRepository) Fetch(ctx context.Context, num int64) (res []domai
 	}
 	return
 }
-func (w *mysqlRoomRepository) GetByID(ctx context.Context, roomID string) (res domain.Room, err error) {
+func (w *postgresqlRoomRepository) GetByID(ctx context.Context, roomID string) (res domain.Room, err error) {
 	query := `SELECT id, warehouse_id, name, created_at, updated_at FROM rooms WHERE id = $1`
 	list, err := w.fetch(ctx, query, roomID)
 	if err != nil {
@@ -79,7 +79,7 @@ func (w *mysqlRoomRepository) GetByID(ctx context.Context, roomID string) (res d
 	return
 }
 
-func (w *mysqlRoomRepository) GetByWarehouseID(ctx context.Context, warehouseID string) (res []domain.RoomDetail, err error) {
+func (w *postgresqlRoomRepository) GetByWarehouseID(ctx context.Context, warehouseID string) (res []domain.RoomDetail, err error) {
 	query := `SELECT id, warehouse_id, name, created_at, updated_at FROM rooms WHERE warehouse_id = $1`
 	rows, err := w.Conn.QueryContext(ctx, query, warehouseID)
 	if err != nil {
@@ -115,7 +115,7 @@ func (w *mysqlRoomRepository) GetByWarehouseID(ctx context.Context, warehouseID 
 	return
 }
 
-func (w *mysqlRoomRepository) Update(ctx context.Context, room *domain.Room) (err error) {
+func (w *postgresqlRoomRepository) Update(ctx context.Context, room *domain.Room) (err error) {
 	query := `UPDATE rooms SET name = $1, updated_at = $2 WHERE id = $3`
 	stmt, err := w.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -135,7 +135,7 @@ func (w *mysqlRoomRepository) Update(ctx context.Context, room *domain.Room) (er
 	}
 	return
 }
-func (w *mysqlRoomRepository) Store(ctx context.Context, room *domain.Room) (err error) {
+func (w *postgresqlRoomRepository) Store(ctx context.Context, room *domain.Room) (err error) {
 	query := `INSERT INTO rooms(id, warehouse_id, name, created_at, updated_at) VALUES($1, $2, $3, $4, $5);`
 	stmt, err := w.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -147,7 +147,7 @@ func (w *mysqlRoomRepository) Store(ctx context.Context, room *domain.Room) (err
 	}
 	return
 }
-func (w *mysqlRoomRepository) Delete(ctx context.Context, roomID string) (err error) {
+func (w *postgresqlRoomRepository) Delete(ctx context.Context, roomID string) (err error) {
 	query := "DELETE FROM rooms WHERE id = $1"
 
 	stmt, err := w.Conn.PrepareContext(ctx, query)
@@ -173,7 +173,7 @@ func (w *mysqlRoomRepository) Delete(ctx context.Context, roomID string) (err er
 	return
 }
 
-func (w *mysqlRoomRepository) IsRoomExist(ctx context.Context, roomID string) (bool, error) {
+func (w *postgresqlRoomRepository) IsRoomExist(ctx context.Context, roomID string) (bool, error) {
 	query := "SELECT * FROM rooms WHERE id = $1"
 	list, err := w.fetch(ctx, query, roomID)
 	if err != nil {

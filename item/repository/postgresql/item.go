@@ -10,15 +10,15 @@ import (
 	"github.com/zarszz/warehouse-rest-api/item/repository"
 )
 
-type mysqlItemRepository struct {
+type postgresqlItemRepository struct {
 	Conn *sql.DB
 }
 
-func NewMysqlItemRepository(Conn *sql.DB) domain.ItemRepository {
-	return &mysqlItemRepository{Conn: Conn}
+func NewPostgresqlItemRepository(Conn *sql.DB) domain.ItemRepository {
+	return &postgresqlItemRepository{Conn: Conn}
 }
 
-func (w *mysqlItemRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.Item, err error) {
+func (w *postgresqlItemRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.Item, err error) {
 	rows, err := w.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -56,7 +56,7 @@ func (w *mysqlItemRepository) fetch(ctx context.Context, query string, args ...i
 	return
 }
 
-func (w *mysqlItemRepository) Fetch(ctx context.Context, num int64) (res []domain.Item, nextCursor string, err error) {
+func (w *postgresqlItemRepository) Fetch(ctx context.Context, num int64) (res []domain.Item, nextCursor string, err error) {
 	query := `SELECT id, item_name, description, owner_id, rack_id, category_id, room_id, warehouse_id, created_at, updated_at FROM items LIMIT $1`
 	if err != nil {
 		return nil, "", domain.ErrBadParamInput
@@ -70,7 +70,7 @@ func (w *mysqlItemRepository) Fetch(ctx context.Context, num int64) (res []domai
 	}
 	return
 }
-func (w *mysqlItemRepository) GetByID(ctx context.Context, itemID string) (res domain.Item, err error) {
+func (w *postgresqlItemRepository) GetByID(ctx context.Context, itemID string) (res domain.Item, err error) {
 	query := `SELECT id, item_name, description, owner_id, rack_id, category_id, room_id, warehouse_id, created_at, updated_at FROM items WHERE id = $1;`
 	list, err := w.fetch(ctx, query, itemID)
 	if err != nil {
@@ -84,7 +84,7 @@ func (w *mysqlItemRepository) GetByID(ctx context.Context, itemID string) (res d
 	return
 }
 
-func (w *mysqlItemRepository) GetByRackID(ctx context.Context, rackID string) ([]domain.Item, error) {
+func (w *postgresqlItemRepository) GetByRackID(ctx context.Context, rackID string) ([]domain.Item, error) {
 	query := `SELECT id, item_name, description, owner_id, rack_id, category_id, room_id, warehouse_id, created_at, updated_at FROM items WHERE rack_id = $1;`
 	res, err := w.fetch(ctx, query, rackID)
 	if err != nil {
@@ -94,7 +94,7 @@ func (w *mysqlItemRepository) GetByRackID(ctx context.Context, rackID string) ([
 	return res, nil
 }
 
-func (w *mysqlItemRepository) Update(ctx context.Context, item *domain.Item) (err error) {
+func (w *postgresqlItemRepository) Update(ctx context.Context, item *domain.Item) (err error) {
 	query := `UPDATE items SET item_name = $1, description = $2, updated_at = $3 WHERE id = $4`
 	stmt, err := w.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -114,7 +114,7 @@ func (w *mysqlItemRepository) Update(ctx context.Context, item *domain.Item) (er
 	}
 	return
 }
-func (w *mysqlItemRepository) Store(ctx context.Context, item *domain.Item) (err error) {
+func (w *postgresqlItemRepository) Store(ctx context.Context, item *domain.Item) (err error) {
 	query := `INSERT INTO 
     			items(id, item_name, description, owner_id, rack_id, category_id, room_id, warehouse_id, created_at, updated_at)
 			VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
@@ -128,7 +128,7 @@ func (w *mysqlItemRepository) Store(ctx context.Context, item *domain.Item) (err
 	}
 	return
 }
-func (w *mysqlItemRepository) Delete(ctx context.Context, itemID string) (err error) {
+func (w *postgresqlItemRepository) Delete(ctx context.Context, itemID string) (err error) {
 	query := "DELETE FROM items WHERE id = $1"
 
 	stmt, err := w.Conn.PrepareContext(ctx, query)

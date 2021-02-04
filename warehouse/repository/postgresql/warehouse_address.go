@@ -9,15 +9,15 @@ import (
 	"github.com/zarszz/warehouse-rest-api/domain"
 )
 
-type mysqlWarehouseAddressRepository struct {
+type postgresqlWarehouseAddressRepository struct {
 	Conn *sql.DB
 }
 
-func NewMysqlWarehouseAddressRepository(Conn *sql.DB) domain.WarehouseAddressRepository {
-	return &mysqlWarehouseAddressRepository{Conn: Conn}
+func NewPostgresqlWarehouseAddressRepository(Conn *sql.DB) domain.WarehouseAddressRepository {
+	return &postgresqlWarehouseAddressRepository{Conn: Conn}
 }
 
-func (m *mysqlWarehouseAddressRepository) fetchWarehouseAddress(ctx context.Context, query string, args ...interface{}) (result *domain.WarehouseAddress, err error) {
+func (m *postgresqlWarehouseAddressRepository) fetchWarehouseAddress(ctx context.Context, query string, args ...interface{}) (result *domain.WarehouseAddress, err error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -54,7 +54,7 @@ func (m *mysqlWarehouseAddressRepository) fetchWarehouseAddress(ctx context.Cont
 	return result, nil
 }
 
-func (m *mysqlWarehouseAddressRepository) FetchWarehouseAddress(ctx context.Context, userID string) (res *domain.WarehouseAddress, err error) {
+func (m *postgresqlWarehouseAddressRepository) FetchWarehouseAddress(ctx context.Context, userID string) (res *domain.WarehouseAddress, err error) {
 	query := `SELECT 
 				id, warehouse_id, address, province, city, country, state, postal_code, created_at, updated_at
 			  FROM warehouse_addresses WHERE warehouse_id = $1 LIMIT 1`
@@ -69,7 +69,7 @@ func (m *mysqlWarehouseAddressRepository) FetchWarehouseAddress(ctx context.Cont
 	return
 }
 
-func (m *mysqlWarehouseAddressRepository) Store(ctx context.Context, warehouseAddress domain.WarehouseAddress) (err error) {
+func (m *postgresqlWarehouseAddressRepository) Store(ctx context.Context, warehouseAddress domain.WarehouseAddress) (err error) {
 	query := `INSERT INTO warehouse_addresses(id, warehouse_id, address, city, state, country, postal_code, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
@@ -84,7 +84,7 @@ func (m *mysqlWarehouseAddressRepository) Store(ctx context.Context, warehouseAd
 	return
 }
 
-func (m *mysqlWarehouseAddressRepository) Update(ctx context.Context, warehouseAddress domain.WarehouseAddress) (err error) {
+func (m *postgresqlWarehouseAddressRepository) Update(ctx context.Context, warehouseAddress domain.WarehouseAddress) (err error) {
 	query := `
 		UPDATE 
 			warehouse_addresses 
