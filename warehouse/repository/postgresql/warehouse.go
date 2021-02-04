@@ -10,15 +10,15 @@ import (
 	"github.com/zarszz/warehouse-rest-api/warehouse/repository"
 )
 
-type mysqlWarehouseRepository struct {
+type postgresqlWarehouseRepository struct {
 	Conn *sql.DB
 }
 
-func NewMysqlWarehouseRepository(Conn *sql.DB) domain.WarehouseRepository {
-	return &mysqlWarehouseRepository{Conn: Conn}
+func NewPostgresqlWarehouseRepository(Conn *sql.DB) domain.WarehouseRepository {
+	return &postgresqlWarehouseRepository{Conn: Conn}
 }
 
-func (w *mysqlWarehouseRepository) fetchs(ctx context.Context, query string, args ...interface{}) (result []domain.Warehouse, err error) {
+func (w *postgresqlWarehouseRepository) fetchs(ctx context.Context, query string, args ...interface{}) (result []domain.Warehouse, err error) {
 	rows, err := w.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -59,7 +59,7 @@ func (w *mysqlWarehouseRepository) fetchs(ctx context.Context, query string, arg
 	return
 }
 
-func (w *mysqlWarehouseRepository) fetch(ctx context.Context, query string, args ...interface{}) (result *domain.WarehouseIndependence, err error) {
+func (w *postgresqlWarehouseRepository) fetch(ctx context.Context, query string, args ...interface{}) (result *domain.WarehouseIndependence, err error) {
 	rows, err := w.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -87,7 +87,7 @@ func (w *mysqlWarehouseRepository) fetch(ctx context.Context, query string, args
 	return warehouse, nil
 }
 
-func (w *mysqlWarehouseRepository) Fetch(ctx context.Context, num int64) (res []domain.Warehouse, nextCursor string, err error) {
+func (w *postgresqlWarehouseRepository) Fetch(ctx context.Context, num int64) (res []domain.Warehouse, nextCursor string, err error) {
 	query := `SELECT warehouses.id,
 				COALESCE(wa.id, ''),
 				warehouses.warehouse_name,
@@ -116,7 +116,7 @@ func (w *mysqlWarehouseRepository) Fetch(ctx context.Context, num int64) (res []
 	return
 }
 
-func (w *mysqlWarehouseRepository) FetchRoom(ctx context.Context, warehouseID string) (res domain.WarehouseRoom, err error) {
+func (w *postgresqlWarehouseRepository) FetchRoom(ctx context.Context, warehouseID string) (res domain.WarehouseRoom, err error) {
 	query := `SELECT
 				r.id, warehouses.warehouse_name, warehouses.id, r.name, r.created_at, r.updated_at
 				FROM warehouses JOIN rooms r on warehouses.id = r.warehouse_id
@@ -160,7 +160,7 @@ func (w *mysqlWarehouseRepository) FetchRoom(ctx context.Context, warehouseID st
 	return
 }
 
-func (w *mysqlWarehouseRepository) GetByID(ctx context.Context, warehouseID string) (res domain.Warehouse, err error) {
+func (w *postgresqlWarehouseRepository) GetByID(ctx context.Context, warehouseID string) (res domain.Warehouse, err error) {
 	query := `SELECT warehouses.id,
 				COALESCE(wa.id, ''),
 				warehouses.warehouse_name,
@@ -187,7 +187,7 @@ func (w *mysqlWarehouseRepository) GetByID(ctx context.Context, warehouseID stri
 	}
 	return
 }
-func (w *mysqlWarehouseRepository) Update(ctx context.Context, warehouse *domain.Warehouse) (err error) {
+func (w *postgresqlWarehouseRepository) Update(ctx context.Context, warehouse *domain.Warehouse) (err error) {
 	query := `UPDATE warehouses SET warehouse_name = $1, updated_at = $2 WHERE id = $3`
 	stmt, err := w.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -207,7 +207,7 @@ func (w *mysqlWarehouseRepository) Update(ctx context.Context, warehouse *domain
 	}
 	return
 }
-func (w *mysqlWarehouseRepository) Store(ctx context.Context, warehouse *domain.Warehouse) (id string, err error) {
+func (w *postgresqlWarehouseRepository) Store(ctx context.Context, warehouse *domain.Warehouse) (id string, err error) {
 	query := `INSERT INTO warehouses(id, warehouse_name, created_at, updated_at) VALUES($1, $2, $3, $4) RETURNING id;`
 	stmt, err := w.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -226,7 +226,7 @@ func (w *mysqlWarehouseRepository) Store(ctx context.Context, warehouse *domain.
 	}
 	return
 }
-func (w *mysqlWarehouseRepository) Delete(ctx context.Context, warehouseID string) (err error) {
+func (w *postgresqlWarehouseRepository) Delete(ctx context.Context, warehouseID string) (err error) {
 	query := "DELETE FROM warehouses WHERE id = $1"
 
 	stmt, err := w.Conn.PrepareContext(ctx, query)
@@ -252,7 +252,7 @@ func (w *mysqlWarehouseRepository) Delete(ctx context.Context, warehouseID strin
 	return
 }
 
-func (w *mysqlWarehouseRepository) IsWarehouseExist(ctx context.Context, warehouseID string) (bool, error) {
+func (w *postgresqlWarehouseRepository) IsWarehouseExist(ctx context.Context, warehouseID string) (bool, error) {
 	query := "SELECT id, warehouse_name FROM warehouses WHERE id = $1;"
 	list, err := w.fetch(ctx, query, warehouseID)
 	if err != nil {

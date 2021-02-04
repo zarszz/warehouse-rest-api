@@ -10,15 +10,15 @@ import (
 	"github.com/zarszz/warehouse-rest-api/user/repository"
 )
 
-type mysqlUserRepository struct {
+type postgresqlUserRepository struct {
 	Conn *sql.DB
 }
 
-func NewMysqlUserRepository(Conn *sql.DB) domain.UserRepository {
-	return &mysqlUserRepository{Conn: Conn}
+func NewPostgresqlUserRepository(Conn *sql.DB) domain.UserRepository {
+	return &postgresqlUserRepository{Conn: Conn}
 }
 
-func (m *mysqlUserRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.User, err error) {
+func (m *postgresqlUserRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.User, err error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -64,7 +64,7 @@ func (m *mysqlUserRepository) fetch(ctx context.Context, query string, args ...i
 	return result, nil
 }
 
-func (m *mysqlUserRepository) Fetch(ctx context.Context, num int64) (res []domain.User, nextCursor string, err error) {
+func (m *postgresqlUserRepository) Fetch(ctx context.Context, num int64) (res []domain.User, nextCursor string, err error) {
 	query := `SELECT
     				users.id, ua.address_id, email, password, first_name, last_name, gender, date_of_birth, address, city, state, country, postal_code, users.created_at, users.updated_at
 				FROM users
@@ -83,7 +83,7 @@ func (m *mysqlUserRepository) Fetch(ctx context.Context, num int64) (res []domai
 	return
 }
 
-func (m *mysqlUserRepository) GetByID(ctx context.Context, userID string) (res domain.User, err error) {
+func (m *postgresqlUserRepository) GetByID(ctx context.Context, userID string) (res domain.User, err error) {
 	query := `SELECT
 	users.id, ua.address_id, email, password, first_name, last_name, gender, date_of_birth, address, city, state, country, postal_code, users.created_at, users.updated_at
   			  FROM users
@@ -104,7 +104,7 @@ func (m *mysqlUserRepository) GetByID(ctx context.Context, userID string) (res d
 	return
 }
 
-func (m *mysqlUserRepository) Store(ctx context.Context, user *domain.User) (err error) {
+func (m *postgresqlUserRepository) Store(ctx context.Context, user *domain.User) (err error) {
 	insertUserQuery := `INSERT INTO users(id, email, password, first_name, last_name, gender, date_of_birth, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`
 
 	stmt, err := m.Conn.PrepareContext(ctx, insertUserQuery)
@@ -119,7 +119,7 @@ func (m *mysqlUserRepository) Store(ctx context.Context, user *domain.User) (err
 	return
 }
 
-func (m *mysqlUserRepository) Delete(ctx context.Context, userID string) (err error) {
+func (m *postgresqlUserRepository) Delete(ctx context.Context, userID string) (err error) {
 	query := "DELETE FROM users WHERE id = $1"
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
@@ -144,7 +144,7 @@ func (m *mysqlUserRepository) Delete(ctx context.Context, userID string) (err er
 
 	return
 }
-func (m *mysqlUserRepository) Update(ctx context.Context, user *domain.User) (err error) {
+func (m *postgresqlUserRepository) Update(ctx context.Context, user *domain.User) (err error) {
 	query := `UPDATE users SET email=$1, first_name=$2, last_name=$3, gender=$4, date_of_birth=$5, updated_at=$6 WHERE id = $7`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
