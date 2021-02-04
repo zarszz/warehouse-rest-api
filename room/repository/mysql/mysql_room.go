@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-	"github.com/zarszz/warehouse-rest-api/category/repository"
 	"github.com/zarszz/warehouse-rest-api/domain"
+	"github.com/zarszz/warehouse-rest-api/room/repository"
 )
 
 type mysqlRoomRepository struct {

@@ -11,9 +11,6 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 
-	_categoryHttpDelivery "github.com/zarszz/warehouse-rest-api/category/delivery/http"
-	_categoryRepo "github.com/zarszz/warehouse-rest-api/category/repository/mysql"
-	_categoryUcase "github.com/zarszz/warehouse-rest-api/category/usecase"
 	_middleware "github.com/zarszz/warehouse-rest-api/middleware"
 
 	_userHttpDelivery "github.com/zarszz/warehouse-rest-api/user/delivery"
@@ -57,7 +54,6 @@ func main() {
 	connection := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable&", dbUser, dbPass, dbHost, dbName)
 	val := url.Values{}
 	dsn := fmt.Sprintf("%s?%s", connection, val.Encode())
-	fmt.Println(connection)
 	dbConn, err := sql.Open(`postgres`, dsn)
 
 	if err != nil {
@@ -80,10 +76,6 @@ func main() {
 	e.Use(middL.CORS)
 
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
-
-	categoryRepo := _categoryRepo.NewMysqlCategoryRepository(dbConn)
-	categoryUsecase := _categoryUcase.NewCategoryUsecase(categoryRepo, timeoutContext)
-	_categoryHttpDelivery.NewCategoryHandler(e, categoryUsecase)
 
 	userRepo := _userRepo.NewMysqlUserRepository(dbConn)
 	au := _userUcase.NewUserUsecase(userRepo, timeoutContext)
