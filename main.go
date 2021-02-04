@@ -11,9 +11,6 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 
-	_categoryHttpDelivery "github.com/zarszz/warehouse-rest-api/category/delivery/http"
-	_categoryRepo "github.com/zarszz/warehouse-rest-api/category/repository/mysql"
-	_categoryUcase "github.com/zarszz/warehouse-rest-api/category/usecase"
 	_middleware "github.com/zarszz/warehouse-rest-api/middleware"
 
 	_userHttpDelivery "github.com/zarszz/warehouse-rest-api/user/delivery"
@@ -58,7 +55,6 @@ func main() {
 	fmt.Println(connection)
 	val := url.Values{}
 	dsn := fmt.Sprintf("%s?%s", connection, val.Encode())
-	fmt.Println(connection)
 	dbConn, err := sql.Open(`postgres`, dsn)
 
 	if err != nil {
@@ -82,10 +78,6 @@ func main() {
 
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 
-	categoryRepo := _categoryRepo.NewMysqlCategoryRepository(dbConn)
-	categoryUsecase := _categoryUcase.NewCategoryUsecase(categoryRepo, timeoutContext)
-	_categoryHttpDelivery.NewCategoryHandler(e, categoryUsecase)
-
 	userRepo := _userRepo.NewMysqlUserRepository(dbConn)
 	au := _userUcase.NewUserUsecase(userRepo, timeoutContext)
 	_userHttpDelivery.NewUserHandler(e, au)
@@ -108,10 +100,11 @@ func main() {
 
 	itemRepo := _itemRepo.NewMysqlItemRepository(dbConn)
 	itemUsecase := _itemUcase.NewItemUsecase(itemRepo, timeoutContext)
-	_itemHttpDelivery.NewItemHandler(e, itemUsecase)
 
 	warehouseRepo := _warehouseRepo.NewMysqlWarehouseRepository(dbConn)
 	warehouseUsecase := _warehouseUcase.NewWarehouseUsecase(warehouseRepo, timeoutContext)
+
+	_itemHttpDelivery.NewItemHandler(e, itemUsecase, warehouseUsecase, roomUsecase)
 	_warehouseHttpDelivery.NewWarehouseHandler(e, warehouseUsecase, roomUsecase, rackUsecase, itemUsecase)
 
 	_ = e.Start(viper.GetString("server.address"))

@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-	"github.com/zarszz/warehouse-rest-api/category/repository"
 	"github.com/zarszz/warehouse-rest-api/domain"
+	"github.com/zarszz/warehouse-rest-api/warehouse/repository"
 )
 
 type mysqlWarehouseRepository struct {
@@ -18,7 +18,7 @@ func NewMysqlWarehouseRepository(Conn *sql.DB) domain.WarehouseRepository {
 	return &mysqlWarehouseRepository{Conn: Conn}
 }
 
-func (w *mysqlWarehouseRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.Warehouse, err error) {
+func (w *mysqlWarehouseRepository) fetchs(ctx context.Context, query string, args ...interface{}) (result []domain.Warehouse, err error) {
 	rows, err := w.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -59,6 +59,34 @@ func (w *mysqlWarehouseRepository) fetch(ctx context.Context, query string, args
 	return
 }
 
+func (w *mysqlWarehouseRepository) fetch(ctx context.Context, query string, args ...interface{}) (result *domain.WarehouseIndependence, err error) {
+	rows, err := w.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		errRow := rows.Close()
+		if errRow != nil {
+			logrus.Error(errRow)
+		}
+	}()
+
+	warehouse := new(domain.WarehouseIndependence)
+	for rows.Next() {
+		err := rows.Scan(
+			&warehouse.ID,
+			&warehouse.Name,
+		)
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+	}
+	return warehouse, nil
+}
+
 func (w *mysqlWarehouseRepository) Fetch(ctx context.Context, num int64) (res []domain.Warehouse, nextCursor string, err error) {
 	query := `SELECT warehouses.id,
 				COALESCE(wa.id, ''),
@@ -78,7 +106,7 @@ func (w *mysqlWarehouseRepository) Fetch(ctx context.Context, num int64) (res []
 	if err != nil {
 		return nil, "", domain.ErrBadParamInput
 	}
-	res, err = w.fetch(ctx, query, num)
+	res, err = w.fetchs(ctx, query, num)
 	if err != nil {
 		return nil, "", err
 	}
@@ -148,7 +176,7 @@ func (w *mysqlWarehouseRepository) GetByID(ctx context.Context, warehouseID stri
 			 FROM warehouses
 				LEFT JOIN warehouse_addresses wa ON warehouses.id = wa.warehouse_id
 			 WHERE warehouses.id = $1;`
-	list, err := w.fetch(ctx, query, warehouseID)
+	list, err := w.fetchs(ctx, query, warehouseID)
 	if err != nil {
 		return domain.Warehouse{}, err
 	}
@@ -222,4 +250,16 @@ func (w *mysqlWarehouseRepository) Delete(ctx context.Context, warehouseID strin
 	}
 
 	return
+}
+
+func (w *mysqlWarehouseRepository) IsWarehouseExist(ctx context.Context, warehouseID string) (bool, error) {
+	query := "SELECT id, warehouse_name FROM warehouses WHERE id = $1;"
+	list, err := w.fetch(ctx, query, warehouseID)
+	if err != nil {
+		return false, err
+	}
+	if list.Name == "" && list.ID == "" {
+		return false, nil
+	}
+	return true, nil
 }

@@ -57,3 +57,9 @@ func (w *warehouseUsecase) Delete(ctx context.Context, warehouseID string) error
 	defer cancel()
 	return w.warehouseRepo.Delete(ctx, warehouseID)
 }
+
+func (w *warehouseUsecase) IsWarehouseExist(ctx context.Context, warehouseID string) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, w.contextTimeout)
+	defer cancel()
+	return w.warehouseRepo.IsWarehouseExist(ctx, warehouseID)
+}

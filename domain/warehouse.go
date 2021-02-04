@@ -13,6 +13,11 @@ type Warehouse struct {
 	UpdatedAt time.Time        `json:"updated_at"`
 }
 
+type WarehouseIndependence struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 type WarehouseRoom struct {
 	ID      string                   `json:"id"`
 	Name    string                   `json:"name"`
@@ -34,6 +39,7 @@ type WarehouseUseCase interface {
 	Update(ctx context.Context, warehouse *Warehouse) error
 	Store(ctx context.Context, warehouse *Warehouse) (id string, err error)
 	Delete(ctx context.Context, warehouseID string) error
+	IsWarehouseExist(ctx context.Context, warehouseID string) (bool, error)
 }
 
 type WarehouseRepository interface {
@@ -43,4 +49,5 @@ type WarehouseRepository interface {
 	Update(ctx context.Context, warehouse *Warehouse) error
 	Store(ctx context.Context, warehouse *Warehouse) (id string, err error)
 	Delete(ctx context.Context, warehouseID string) error
+	IsWarehouseExist(ctx context.Context, warehouseID string) (bool, error)
 }
