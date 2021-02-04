@@ -14,23 +14,23 @@ import (
 	_middleware "github.com/zarszz/warehouse-rest-api/middleware"
 
 	_userHttpDelivery "github.com/zarszz/warehouse-rest-api/user/delivery"
-	_userRepo "github.com/zarszz/warehouse-rest-api/user/repository/mysql"
+	_userRepo "github.com/zarszz/warehouse-rest-api/user/repository/postgresql"
 	_userUcase "github.com/zarszz/warehouse-rest-api/user/usecase"
 
 	_warehouseHttpDelivery "github.com/zarszz/warehouse-rest-api/warehouse/delivery"
-	_warehouseRepo "github.com/zarszz/warehouse-rest-api/warehouse/repository/mysql"
+	_warehouseRepo "github.com/zarszz/warehouse-rest-api/warehouse/repository/postgresql"
 	_warehouseUcase "github.com/zarszz/warehouse-rest-api/warehouse/usecase"
 
 	_roomHttpDelivery "github.com/zarszz/warehouse-rest-api/room/delivery"
-	_roomRepo "github.com/zarszz/warehouse-rest-api/room/repository/mysql"
+	_roomRepo "github.com/zarszz/warehouse-rest-api/room/repository/postgresql"
 	_roomUcase "github.com/zarszz/warehouse-rest-api/room/usecase"
 
 	_itemHttpDelivery "github.com/zarszz/warehouse-rest-api/item/delivery"
-	_itemRepo "github.com/zarszz/warehouse-rest-api/item/repository/mysql"
+	_itemRepo "github.com/zarszz/warehouse-rest-api/item/repository/postgresql"
 	_itemUcase "github.com/zarszz/warehouse-rest-api/item/usecase"
 
 	_rackHttpDelivery "github.com/zarszz/warehouse-rest-api/rack/delivery/http"
-	_rackRepo "github.com/zarszz/warehouse-rest-api/rack/repository/mysql"
+	_rackRepo "github.com/zarszz/warehouse-rest-api/rack/repository/postgresql"
 	_rackUcase "github.com/zarszz/warehouse-rest-api/rack/usecase"
 )
 
