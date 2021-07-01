@@ -6,8 +6,10 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
+	"github.com/zarszz/warehouse-rest-api/auth"
 	"github.com/zarszz/warehouse-rest-api/constant"
 	"github.com/zarszz/warehouse-rest-api/domain"
+	"github.com/zarszz/warehouse-rest-api/middleware"
 	"github.com/zarszz/warehouse-rest-api/utils"
 	"gopkg.in/go-playground/validator.v9"
 )
@@ -18,18 +20,22 @@ type ResponseError struct {
 
 type UserHandler struct {
 	UserUseCase domain.UserUseCase
+	AuthService auth.Service
 }
 
 // NewUserHandler will initialize the articles/ resources endpoint
-func NewUserHandler(e *echo.Echo, userUsecase domain.UserUseCase) {
+func NewUserHandler(e *echo.Echo, userUsecase domain.UserUseCase, authService auth.Service) {
 	handler := &UserHandler{
 		UserUseCase: userUsecase,
+		AuthService: authService,
 	}
-	e.GET("/users", handler.FetchUser)
+	jwtMiddleware := middleware.JWT()
+	e.GET("/users", handler.FetchUser, jwtMiddleware)
 	e.POST("/users", handler.Store)
 	e.GET("/users/:id", handler.GetByID)
 	e.DELETE("/users/:id", handler.Delete)
 	e.PUT("/users/:id", handler.Update)
+	e.POST("/login", handler.Login)
 }
 
 // FetchUser will fetch the categories/category based on given params
@@ -140,4 +146,34 @@ func (a *UserHandler) Delete(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusNoContent)
+}
+
+func (a *UserHandler) Login(c echo.Context) error {
+	var loginInput domain.LoginInput
+
+	if err := c.Bind(&loginInput); err != nil{
+		return utils.HandleResponseIn(c, constant.FAILED, domain.ErrBadParamInput.Error(), http.StatusBadRequest)
+	}
+
+	ctx := c.Request().Context()
+
+	user, err := a.UserUseCase.Login(ctx, loginInput.Email)
+	if err != nil {
+		return utils.HandleResponseIn(c, constant.FAILED, constant.DATA_NOT_FOUND, http.StatusBadRequest)
+	}
+
+	if user.Password != loginInput.Password {
+		return utils.HandleResponseIn(c, constant.FAILED, "Email or password wrong", http.StatusBadRequest)
+	}
+
+	token, err := a.AuthService.GenerateToken(user.ID)
+	if err != nil {
+		return utils.HandleResponseIn(c, constant.FAILED, "Error when generate token", http.StatusBadRequest)
+	}
+
+	data := map[string]string{
+		"token": token,
+	}
+
+	return utils.HandleResponseGet(c, constant.SUCCESS, constant.SUCCESS_LOAD_DATA, http.StatusOK, data)
 }

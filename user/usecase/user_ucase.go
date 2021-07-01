@@ -59,6 +59,7 @@ func (a *userUsecase) Store(ctx context.Context, user *domain.User) (err error) 
 	err = a.userRepo.Store(ctx, user)
 	return
 }
+
 func (a *userUsecase) Delete(ctx context.Context, userID string) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, a.contextTimeout)
 	defer cancel()
@@ -70,4 +71,16 @@ func (a *userUsecase) Delete(ctx context.Context, userID string) (err error) {
 		return domain.ErrNotFound
 	}
 	return a.userRepo.Delete(ctx, userID)
+}
+
+func (a *userUsecase) Login(ctx context.Context, email string) (user domain.UserAuth, err error) {
+	ctx, cancel := context.WithTimeout(ctx, a.contextTimeout)
+	defer cancel()
+
+	user, err = a.userRepo.Login(ctx, email)
+	if err != nil {
+		return domain.UserAuth{}, err
+	}
+	
+	return
 }

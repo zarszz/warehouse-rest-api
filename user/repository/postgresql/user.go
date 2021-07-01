@@ -167,3 +167,30 @@ func (m *postgresqlUserRepository) Update(ctx context.Context, user *domain.User
 
 	return
 }
+
+func (m *postgresqlUserRepository) Login(ctx context.Context, email string) (domain.UserAuth, error) {
+	query := `SELECT id, email, password FROM users WHERE email=$1`
+
+	rows, err := m.Conn.QueryContext(ctx, query, email)
+	if err != nil {
+		return domain.UserAuth{}, nil
+	}
+
+	defer func ()  {
+		err := rows.Close()
+		if err != nil {
+			logrus.Println(err.Error())
+		}
+	}()	
+
+	user := domain.UserAuth{}
+
+	for rows.Next() {
+		err := rows.Scan(&user.ID, &user.Email, &user.Password)
+		if err != nil {
+			return domain.UserAuth{}, nil
+		}
+	}
+
+	return user, nil
+}

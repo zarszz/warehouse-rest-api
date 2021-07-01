@@ -11,6 +11,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 
+	"github.com/zarszz/warehouse-rest-api/auth"	
 	_middleware "github.com/zarszz/warehouse-rest-api/middleware"
 
 	_userHttpDelivery "github.com/zarszz/warehouse-rest-api/user/delivery"
@@ -74,13 +75,15 @@ func main() {
 
 	e := echo.New()
 	middL := _middleware.InitMiddleware()
-	e.Use(middL.CORS)
+	e.Use(middL.CORS)	
 
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 
+	authService := auth.NewService()	
+
 	userRepo := _userRepo.NewPostgresqlUserRepository(dbConn)
 	au := _userUcase.NewUserUsecase(userRepo, timeoutContext)
-	_userHttpDelivery.NewUserHandler(e, au)
+	_userHttpDelivery.NewUserHandler(e, au, authService)
 
 	userAddressRepo := _userRepo.NewPostgresqlUserAddressRepository(dbConn)
 	userAddressUsecase := _userUcase.NewUserAddressUsecase(userAddressRepo, timeoutContext)
